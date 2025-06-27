@@ -10,13 +10,38 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 
     <script src = "script.js" defer></script>
+
+    <script src="https://pfau-software.de/json-viewer/dist/iife/index.js"></script>
 </head>
 <body>
-    <section id="demos" class="invisible">  
-      <div id="liveView" class="camView">
-        <button id="webcamButton">Enable Webcam</button>
-        <video id="webcam" autoplay muted width="640" height="480"></video>
-      </div>
-    </section>    
+
+  <div class = "nav">
+    <div class = "title">
+      <h3>Track Your Ball</h3>
+      <p class = "meta">tensorflow.js coco-ssd demo</p>
+    </div>
+
+    <div class = "links">
+      <p>About</p>
+      <p>Link</p>
+      <p>Link</p>
+    </div>
+  </div>
+
+  <div class = "container">
+    <button id="loadImageButton">Load Image</button>
+
+    <button id="loadVideoButton">Load Video</button>
+
+    <button id = "webcamButton">Load Webcam</button>
+  </div>
+
+  <div class = "explainer">
+    <h3>Status</h3>
+    <p class = "statusBar">Loading Model..</p>
+    <andypf-json-viewer id = "model-output">
+      
+    </andypf-json-viewer>
+  </div>
 </body>
 </html>
