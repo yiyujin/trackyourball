@@ -28,17 +28,22 @@
     </div>
   </div>
 
+  <div class="imageView" id="imagePreviewWrapper" style="display: none;">
+    <img id="preview" />
+  </div>
+
   <div class = "container">
-    <button id="loadImageButton">Load Image</button>
+    <button id="loadImageButton" disabled>Load Image</button>
+    <input type="file" id="image-input" accept="image/*" style="display: none;" />
 
-    <button id="loadVideoButton">Load Video</button>
+    <button id="loadVideoButton" disabled>Load Video</button>
 
-    <button id = "webcamButton">Load Webcam</button>
+    <button id = "webcamButton" disabled>Load Webcam</button>
   </div>
 
   <div class = "explainer">
     <h3>Status</h3>
-    <p class = "statusBar">Loading Model..</p>
+    <p class = "statusBar">Model is loading..</p>
     <andypf-json-viewer id = "model-output">
       
     </andypf-json-viewer>

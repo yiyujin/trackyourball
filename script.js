@@ -9,11 +9,18 @@ cocoSsd.load()
   model = loadedModel;
   console.log("Model promise resolved");
 
-  statusBar.innerText = "Model loaded";
+  statusBar.innerText = "Model is loaded.";
 
   const jsonString = safeStringify(model);
   const parsedObject = JSON.parse(jsonString);
   output.data = parsedObject;
+
+  const buttons = document.querySelectorAll("button");
+  buttons.forEach( (button) => {
+    button.disabled = false;
+    button.removeAttribute('disabled');
+  });
+
 }).catch(function(err){
   console.error("Model promise rejected.", err);
 
@@ -29,4 +36,31 @@ function safeStringify(obj, indent = 2) {
     }
     return value;
   }, indent);
+}
+
+// IMAGE
+const loadImageButton = document.getElementById("loadImageButton");
+const imageInput = document.getElementById('image-input');
+const imagePreview = document.getElementById('preview');
+
+loadImageButton.addEventListener("click", loadImage);
+
+function loadImage(){
+  imageInput.click();
+
+  imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result;
+          imagePreviewWrapper.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+}
+
+function detectImage(){
+
 }
