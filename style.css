@@ -108,24 +108,24 @@ button:disabled {
   padding : 16px;
 
   height: 200px;
-  /* background-color: red; */
 
   border-top : 1px solid var(--pt);
 
-  overflow: scroll;
+  /* overflow: scroll; */
+  overflow-y: auto;
 
   display: flex;
   flex-direction: column-reverse;
 }
 
 /* IMAGE */
-#imagePreviewWrapper {
+#previewWrapper {
   position: relative;
   width : 100vw;
   height: 300px;
 }
 
-#preview {
+.previewFile {
   max-width: 100%;
   max-height: 100%;
 }

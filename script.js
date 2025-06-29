@@ -27,8 +27,7 @@ cocoSsd.load()
 
 }).catch(function(err){
   console.error("Model promise rejected.", err);
-
-  statusBar.innerText = "Model failed to load.";
+  addMessage("Model failed to load.");
 });
 
 function safeStringify(obj, indent = 2) {
@@ -45,49 +44,43 @@ function safeStringify(obj, indent = 2) {
 // IMAGE
 const loadImageButton = document.getElementById("loadImageButton");
 const imageInput = document.getElementById('image-input');
-const imagePreview = document.getElementById('preview');
-const imagePreviewWrapper = document.getElementById('imagePreviewWrapper');
+const imagePreview = document.getElementById('previewImage');
+const previewWrapper = document.getElementById('previewWrapper');
 
 loadImageButton.addEventListener("click", loadImage);
 
 let imageUrl = null;
+let imageChildren = [];
 
 function loadImage(){
   imageInput.click();
 
   imageInput.addEventListener('change', () => {
-      const file = imageInput.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-          imageUrl = e.target.result; // set image url here
+    const file = imageInput.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        imageUrl = e.target.result; // set image url here
 
-          imagePreview.src = imageUrl;
-          imagePreviewWrapper.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      }
+        imagePreview.src = imageUrl;
+        previewWrapper.style.display = 'block';
 
-      // console.log(file);
-    });
+        clearDrawings();
+      };
+      reader.readAsDataURL(file);
+
+      addMessage("Image added.");
+    }
+  });
 }
-
-let imageChildren = [];
 
 function detectImage(){
   if(!model || !imageUrl ){ return; } // just in case
 
-  addMessage("Detecting image...")
+  addMessage("Detecting image...");
 
   model.detect(imagePreview).then(function(predictions){
     console.log('Image predictions : ', predictions);
-
-    // Clear previous image predictions
-    for (let i = 0; i < imageChildren.length; i++) {
-      imageContainer.removeChild(imageChildren[i]);
-    }
-    imageChildren.splice(0);
-    
     addMessage(`Detection complete! Found ${predictions.length} objects.`);
 
     let json = document.createElement("andypf-json-viewer");
@@ -96,33 +89,59 @@ function detectImage(){
 
     drawBoundingBoxes(predictions);
   }).catch(function(error){
-    console.error('Detection failed:', error);
-    
-    let msg = document.createElement("p");
-    msg.textContent = "Detection failed. Please try again.";
-    msg.style.color = "red";
-    explainer.append(msg);
+    console.error('Detection failed : ', error);
+    addMessage("Detection failed.");
   });
 }
 
-function drawBoundingBoxes(predictions){
+function drawBoundingBoxes(predictions, fileType) {
   const confidenceThreshold = 0;
 
-  for(let i = 0; i < predictions.length; i++){
-    if(predictions[i].score > confidenceThreshold){
-      // DRAW LABEL
+  const mediaElement = fileType === "video" ? videoPlayer : imagePreview;
+
+  let scaleX = 1, scaleY = 1;
+
+  if (fileType === "video") {
+    const naturalWidth = mediaElement.videoWidth;
+    const naturalHeight = mediaElement.videoHeight;
+    const renderedWidth = mediaElement.clientWidth;
+    const renderedHeight = mediaElement.clientHeight;
+
+    scaleX = renderedWidth / naturalWidth;
+    scaleY = renderedHeight / naturalHeight;
+  }
+
+  for (let i = 0; i < predictions.length; i++) {
+    if (predictions[i].score > confidenceThreshold) {
+      const [x, y, width, height] = predictions[i].bbox;
+
+      const scaledX = x * scaleX;
+      const scaledY = y * scaleY;
+      const scaledW = width * scaleX;
+      const scaledH = height * scaleY;
+
+      // LABEL
       const label = document.createElement("p");
       label.setAttribute("class", "label");
       label.innerText = predictions[i].class + " (" + Math.round(predictions[i].score * 100) + ")";
-      label.style = `margin-left : ${predictions[i].bbox[0]}px; margin-top: ${(predictions[i].bbox[1] - 10)}px; top: 0; left: 0;`;
-      
-      //DRAW BOUNDINGBOX
+      label.style = `
+        margin-left : ${scaledX}px;
+        margin-top: ${scaledY - 10}px;
+        top: 0; left: 0;
+      `;
+
+      // BOUNDING BOX
       const boundingbox = document.createElement("div");
       boundingbox.setAttribute("class", "boundingbox");
-      boundingbox.style = `left : ${predictions[i].bbox[0]}px; top : ${predictions[i].bbox[1]}px; width : ${predictions[i].bbox[2]}px; height : ${predictions[i].bbox[3]}px;`;
+      boundingbox.style = `
+        left: ${scaledX}px;
+        top: ${scaledY}px;
+        width: ${scaledW}px;
+        height: ${scaledH}px;
+      `;
 
-      imagePreviewWrapper.appendChild(label);
-      imagePreviewWrapper.appendChild(boundingbox);
+      previewWrapper.appendChild(label);
+      previewWrapper.appendChild(boundingbox);
 
       imageChildren.push(boundingbox);
       imageChildren.push(label);
@@ -130,8 +149,69 @@ function drawBoundingBoxes(predictions){
   }
 }
 
+
+function clearDrawings(){
+  for (let i = 0; i < imageChildren.length; i++) {
+    previewWrapper.removeChild(imageChildren[i]);
+  }
+  imageChildren.splice(0);
+}
+
 function addMessage(msgContent){
   let newMessage = document.createElement("p");
   newMessage.textContent = msgContent;
   explainer.append(newMessage);
+}
+
+// VIDEO
+const loadVideoButton = document.getElementById("loadVideoButton");
+const videoInput = document.getElementById("video-input");
+const videoPlayer = document.getElementById("previewVideo");
+
+let videoURL = null;
+
+loadVideoButton.addEventListener("click", () => {
+  videoInput.click();
+});
+
+videoInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const videoURL = URL.createObjectURL(file);
+  videoPlayer.src = videoURL;
+  previewWrapper.style.display = 'block';
+  
+  videoPlayer.load();
+  // videoPlayer.play();
+
+  // Clean up the object URL when the video ends
+  videoPlayer.onended = () => {
+    URL.revokeObjectURL(videoURL);
+  };
+});
+
+function detectVideoFrame(){
+  addMessage("Detecting video..");
+
+  model.detect(videoPlayer).then(function(predictions){
+    clearDrawings();
+
+    addMessage(`Detected video frame. Found ${predictions.length} objects.`);
+    let json = document.createElement("andypf-json-viewer");
+    json.data = predictions;
+    explainer.append(json);
+
+    drawBoundingBoxes(predictions, "video");
+
+    if (!videoPlayer.ended) {
+      requestAnimationFrame(detectVideoFrame);
+    } else {
+      addMessage("Video ended, detection stopped.");
+    }
+  }).catch(function(error){
+    console.error('Detection failed : ', error);
+
+    addMessage("Detection failed.");
+  });
 }
