@@ -4,18 +4,14 @@ const statusBar = document.querySelector(".statusBar");
 const output = document.getElementById("model-output");
 
 const explainer = document.querySelector(".explainer");
-let msg = document.createElement("p");
-msg.textContent = "Model is loading..";
-explainer.append(msg);
+addMessage("Model is loading..");
 
 cocoSsd.load()
   .then(function (loadedModel) {
   model = loadedModel;
   console.log("Model promise resolved");
 
-  let msg = document.createElement("p");
-  msg.textContent = "Model is loaded.";
-  explainer.append(msg);
+  addMessage("Model is loaded.");
 
   const jsonString = safeStringify(model);
   const parsedObject = JSON.parse(jsonString);
@@ -81,10 +77,7 @@ let imageChildren = [];
 function detectImage(){
   if(!model || !imageUrl ){ return; } // just in case
 
-  // Create and show "detecting..." message
-  let msg = document.createElement("p");
-  msg.textContent = "Detecting image...";
-  explainer.append(msg);
+  addMessage("Detecting image...")
 
   model.detect(imagePreview).then(function(predictions){
     console.log('Image predictions : ', predictions);
@@ -95,9 +88,8 @@ function detectImage(){
     }
     imageChildren.splice(0);
     
-    let msg = document.createElement("p");
-    msg.textContent = `Detection complete! Found ${predictions.length} objects.`;
-    explainer.append(msg);
+    addMessage(`Detection complete! Found ${predictions.length} objects.`);
+
     let json = document.createElement("andypf-json-viewer");
     json.data = predictions;
     explainer.append(json);
@@ -127,10 +119,7 @@ function drawBoundingBoxes(predictions){
       //DRAW BOUNDINGBOX
       const boundingbox = document.createElement("div");
       boundingbox.setAttribute("class", "boundingbox");
-      boundingbox.style = 'left: ' + predictions[i].bbox[0] + 'px; top: '
-            + predictions[i].bbox[1] + 'px; width: ' 
-            + predictions[i].bbox[2] + 'px; height: '
-            + predictions[i].bbox[3] + 'px;';
+      boundingbox.style = `left : ${predictions[i].bbox[0]}px; top : ${predictions[i].bbox[1]}px; width : ${predictions[i].bbox[2]}px; height : ${predictions[i].bbox[3]}px;`;
 
       imagePreviewWrapper.appendChild(label);
       imagePreviewWrapper.appendChild(boundingbox);
@@ -139,4 +128,10 @@ function drawBoundingBoxes(predictions){
       imageChildren.push(label);
     }
   }
+}
+
+function addMessage(msgContent){
+  let newMessage = document.createElement("p");
+  newMessage.textContent = msgContent;
+  explainer.append(newMessage);
 }
