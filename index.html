@@ -19,6 +19,7 @@
     <div class = "title">
       <h3>Track Your Ball</h3>
       <p class = "meta">tensorflow.js coco-ssd demo</p>
+      <button onclick="detectImage()">Detect</button>
     </div>
 
     <div class = "links">
@@ -34,7 +35,7 @@
 
   <div class = "container">
     <button id="loadImageButton" disabled>Load Image</button>
-    <input type="file" id="image-input" accept="image/*" style="display: none;" />
+    <input type="file" id="image-input" accept=".jpg, .jpeg, .png" style="display: none;" />
 
     <button id="loadVideoButton" disabled>Load Video</button>
 
@@ -42,11 +43,6 @@
   </div>
 
   <div class = "explainer">
-    <h3>Status</h3>
-    <p class = "statusBar">Model is loading..</p>
-    <andypf-json-viewer id = "model-output">
-      
-    </andypf-json-viewer>
   </div>
 </body>
 </html>

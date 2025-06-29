@@ -3,17 +3,25 @@ let model = undefined;
 const statusBar = document.querySelector(".statusBar");
 const output = document.getElementById("model-output");
 
-// if promise is resolved, run this callback (anonymous function)
+const explainer = document.querySelector(".explainer");
+let msg = document.createElement("p");
+msg.textContent = "Model is loading..";
+explainer.append(msg);
+
 cocoSsd.load()
   .then(function (loadedModel) {
   model = loadedModel;
   console.log("Model promise resolved");
 
-  statusBar.innerText = "Model is loaded.";
+  let msg = document.createElement("p");
+  msg.textContent = "Model is loaded.";
+  explainer.append(msg);
 
   const jsonString = safeStringify(model);
   const parsedObject = JSON.parse(jsonString);
-  output.data = parsedObject;
+  let json = document.createElement("andypf-json-viewer");
+  json.data = parsedObject;
+  explainer.append(json);
 
   const buttons = document.querySelectorAll("button");
   buttons.forEach( (button) => {
@@ -42,8 +50,11 @@ function safeStringify(obj, indent = 2) {
 const loadImageButton = document.getElementById("loadImageButton");
 const imageInput = document.getElementById('image-input');
 const imagePreview = document.getElementById('preview');
+const imagePreviewWrapper = document.getElementById('imagePreviewWrapper');
 
 loadImageButton.addEventListener("click", loadImage);
+
+let imageUrl = null;
 
 function loadImage(){
   imageInput.click();
@@ -53,14 +64,79 @@ function loadImage(){
       if (file) {
         const reader = new FileReader();
         reader.onload = e => {
-          preview.src = e.target.result;
+          imageUrl = e.target.result; // set image url here
+
+          imagePreview.src = imageUrl;
           imagePreviewWrapper.style.display = 'block';
         };
         reader.readAsDataURL(file);
       }
+
+      // console.log(file);
     });
 }
 
-function detectImage(){
+let imageChildren = [];
 
+function detectImage(){
+  if(!model || !imageUrl ){ return; } // just in case
+
+  // Create and show "detecting..." message
+  let msg = document.createElement("p");
+  msg.textContent = "Detecting image...";
+  explainer.append(msg);
+
+  model.detect(imagePreview).then(function(predictions){
+    console.log('Image predictions : ', predictions);
+
+    // Clear previous image predictions
+    for (let i = 0; i < imageChildren.length; i++) {
+      imageContainer.removeChild(imageChildren[i]);
+    }
+    imageChildren.splice(0);
+    
+    let msg = document.createElement("p");
+    msg.textContent = `Detection complete! Found ${predictions.length} objects.`;
+    explainer.append(msg);
+    let json = document.createElement("andypf-json-viewer");
+    json.data = predictions;
+    explainer.append(json);
+
+    drawBoundingBoxes(predictions);
+  }).catch(function(error){
+    console.error('Detection failed:', error);
+    
+    let msg = document.createElement("p");
+    msg.textContent = "Detection failed. Please try again.";
+    msg.style.color = "red";
+    explainer.append(msg);
+  });
+}
+
+function drawBoundingBoxes(predictions){
+  const confidenceThreshold = 0;
+
+  for(let i = 0; i < predictions.length; i++){
+    if(predictions[i].score > confidenceThreshold){
+      // DRAW LABEL
+      const label = document.createElement("p");
+      label.setAttribute("class", "label");
+      label.innerText = predictions[i].class + " (" + Math.round(predictions[i].score * 100) + ")";
+      label.style = `margin-left : ${predictions[i].bbox[0]}px; margin-top: ${(predictions[i].bbox[1] - 10)}px; top: 0; left: 0;`;
+      
+      //DRAW BOUNDINGBOX
+      const boundingbox = document.createElement("div");
+      boundingbox.setAttribute("class", "boundingbox");
+      boundingbox.style = 'left: ' + predictions[i].bbox[0] + 'px; top: '
+            + predictions[i].bbox[1] + 'px; width: ' 
+            + predictions[i].bbox[2] + 'px; height: '
+            + predictions[i].bbox[3] + 'px;';
+
+      imagePreviewWrapper.appendChild(label);
+      imagePreviewWrapper.appendChild(boundingbox);
+
+      imageChildren.push(boundingbox);
+      imageChildren.push(label);
+    }
+  }
 }
