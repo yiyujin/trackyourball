@@ -128,14 +128,16 @@ function handleVideoChange() {
   videoElement.controls = true;
   videoElement.src = videoBlobURL;
 
-  videoElement.onended = () => {
-    URL.revokeObjectURL(videoBlobURL);
-  };
-
   mediaContainer.appendChild(videoElement);
   mediaContainer.style.display = "block";
 
   videoElement.addEventListener("play", () => {
+    addMessage("Video playing, detection started.");
+    detectVideoFrame();
+  });
+
+  videoElement.addEventListener("playing", () => {
+    addMessage("Video is now playing, starting detection");
     detectVideoFrame();
   });
 
@@ -145,7 +147,6 @@ function handleVideoChange() {
 
   videoElement.addEventListener("ended", () => {
     addMessage("Video ended, detection stopped.");
-    URL.revokeObjectURL(videoURL);
   });
 
   videoElement.load();

@@ -67,6 +67,8 @@ button:hover {
 
 button:disabled {
   opacity : 0.2;
+
+  cursor : default;
 }
 
 /* COMPONENTS */
