@@ -19,8 +19,9 @@
     <div class = "title">
       <h3>Track Your Ball</h3>
       <p class = "meta">tensorflow.js coco-ssd demo</p>
-      <button onclick="detectImage()">Detect Image</button>
-      <button onclick="detectVideoFrame()">Detect Video</button>
+      <button id = "detectImageButton" onclick="detectImage()" disabled>Detect Image</button>
+      <button onclick="preprocessVideo()" disabled>Pre-process Video</button>
+      <input type="text" id="confidenceInput" value="0.5" />
     </div>
 
     <div class = "links">
@@ -30,10 +31,7 @@
     </div>
   </div>
 
-  <div id="previewWrapper" style="display: none;">
-    <img class = "previewFile" id="previewImage" />
-    <video class = "previewFile" id = "previewVideo" controls></video>
-  </div>
+  <div id="mediaContainer" style="display: none;"></div>
 
   <div class = "container">
     <button id="loadImageButton" disabled>Load Image</button>

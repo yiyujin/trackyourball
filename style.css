@@ -49,8 +49,8 @@ p {
 
 button {
   outline : 1px solid var(--pt);
+  /* border-top : 1px solid var(--pt); */
   /* box-shadow: inset -1px 0 black; */
-
   border : none;
 
   transition : background-color 0.3s ease;
@@ -96,6 +96,8 @@ button:disabled {
   display: flex;
   flex-direction: row;
   align-items: center;
+
+  border-top : 1px solid var(--pt);
 }
 
 .container>button {
@@ -111,21 +113,25 @@ button:disabled {
 
   border-top : 1px solid var(--pt);
 
-  /* overflow: scroll; */
   overflow-y: auto;
+}
 
-  display: flex;
-  flex-direction: column-reverse;
+.explainer>p {
+  opacity : 0.4;
+}
+
+.explainer>p:last-of-type {
+  opacity : 1;
 }
 
 /* IMAGE */
-#previewWrapper {
+#mediaContainer {
   position: relative;
   width : 100vw;
-  height: 300px;
+  height: 600px;
 }
 
-.previewFile {
+.file {
   max-width: 100%;
   max-height: 100%;
 }
